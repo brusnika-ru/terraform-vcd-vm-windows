@@ -1,50 +1,26 @@
-variable "catalog_name" {
-  type        = string
-  description = "Library catalog where placed VM templates"
-}
-
-variable "template_name" {
-  type        = string
-  description = "vApp templete contained VMs"
-}
-
-variable "vm_name_template" {
-  type        = string
-  description = "Name of VM source for deploy"
-}
-
-variable vcd_edge_name {
-  type        = string
-  description = "Name of the edge gateway"
-}
-
-variable "ext_net_name" {
-  type        = string
-  description = "Name of public internet network"
-}
-
-variable "vapp_name" {
+variable "vapp" {
   type        = string
   description = "Name of vApp to deploy VM"
 }
 
-variable "vm_name" {
+variable "name" {
   type        = string
   description = "A unique name for VM"
 }
 
-variable "vm_memory" {
+variable "ram" {
   type        = number
   description = "Size of memory VM in MegaBytes"
 }
 
-variable "vm_cpu" {
+variable "cpu" {
   type        = number
   description = "Count of CPU cores VM"
 }
 
-variable "vm_storage" {
+variable "storages" {
   description = "Size of disks in GigaBytes and name of mount points"
+  default     =  [{}]
 }
 
 variable "types" {
@@ -52,40 +28,30 @@ variable "types" {
     type = string
     iops = number
   }))
-  default = [
-    {
-      type = "vcd-type-med"
-      iops = 1000
-    },
-    {
-      type = "vcd-type-ssd"
-      iops = 5000
-    }
-  ]
 }
 
-variable "vm_net" {
+variable "networks" {
   description = "Name networks for attach to VM. Manual IP (optional)"
 }
 
-variable "ssh_user" {
-  type        = string
-  description = "Account name for service connect"
+variable "template" {
+  description = "Name of VM in vApp template to deploy (optional)"
+  default     = "" 
 }
 
-variable "ssh_key" {
-  type        = string
-  description = "Path to private key for ssh_user"
+variable "common" {
+  # type        = map
+  description = "Common variables"
 }
 
 locals {
   storages = flatten([
-    for storage_key, storage in var.vm_storage : [
+    for storage_key, storage in var.storages : [
       for type_key, type in storage : {
         type = "vcd-type-${storage_key}"
         name = type.mount_name
         size = type.mount_size
-        bus  = index(keys(var.vm_storage), storage_key) + 1
+        bus  = index(keys(var.storages), storage_key) + 1
         unit = type_key
       }
     ]
@@ -100,11 +66,12 @@ locals {
   mounts_group = { for mount in local.storages : mount.name => tonumber(mount.size)... }
   mounts       = zipmap([for k, v in local.mounts_group : k], [for v in local.mounts_group : sum(v)])
 
-  hot_add = var.vm_cpu != "8" ? true : false
-
-  dnat_port_ssh = random_integer.dynamic_ports.result
-  dnat_orig_ip  = "176.53.182.12"
+  hot_add = var.cpu != 8 ? true : false
 
   ssh_ip   = local.dnat_orig_ip
   ssh_port = local.dnat_port_ssh
+
+  dnat_port_ssh = random_integer.dynamic_ports.result
+  dnat_orig_ip  = "176.53.182.12"
+  
 }

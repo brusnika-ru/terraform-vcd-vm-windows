@@ -72,6 +72,6 @@ locals {
   ssh_port = local.dnat_port_ssh
 
   dnat_port_ssh = random_integer.dynamic_ports.result
-  dnat_orig_ip  = "176.53.182.12"
+  dnat_orig_ip  = data.vcd_edgegateway.edge.default_external_network_ip
   
 }

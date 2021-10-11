@@ -4,6 +4,11 @@ resource "random_integer" "dynamic_ports" {
   max = 65535
 }
 
+# Получение данных о EDGE
+data "vcd_edgegateway" "edge" {
+  name = var.common.vcd_edge_name
+}
+
 # Создание правила Firewall для проброса SSH
 resource "vcd_nsxv_firewall_rule" "dnat_ssh_firewall" {
   edge_gateway = var.common.vcd_edge_name

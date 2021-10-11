@@ -171,7 +171,7 @@ resource "vcd_vm_internal_disk" "vmStorage" {
   storage_profile = each.value.type
 
   provisioner "local-exec" {
-    command = "ssh -tt -p ${local.ssh_port} -i ${var.common.ssh_key} ${var.common.ssh_user}@${local.ssh_ip} 'powershell.exe -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\createdisk.ps1 ${self.bus_number} ${self.unit_number} ${each.value.name}'"
+    command = "ssh -o StrictHostKeyChecking=no -tt -p ${local.ssh_port} -i ${var.common.ssh_key} ${var.common.ssh_user}@${local.ssh_ip} 'powershell.exe -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\createdisk.ps1 ${self.bus_number} ${self.unit_number} ${each.value.name}'"
   }
 }
 
@@ -199,7 +199,7 @@ resource "null_resource" "extend_partitions" {
   }
 
   provisioner "local-exec" {
-    command = "ssh -p ${local.ssh_port} -i ${var.common.ssh_key} ${var.common.ssh_user}@${local.ssh_ip} 'powershell.exe -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\resizepart.ps1'"
+    command = "ssh -o StrictHostKeyChecking=no -p ${local.ssh_port} -i ${var.common.ssh_key} ${var.common.ssh_user}@${local.ssh_ip} 'powershell.exe -ExecutionPolicy Bypass -File C:\\Windows\\Temp\\resizepart.ps1'"
   }
 }
 

@@ -1,34 +1,3 @@
-# Рандомный порт для проброса SSH
-resource "random_integer" "dynamic_ports" {
-  min = 49152
-  max = 65535
-}
-
-# Получение данных о EDGE
-data "vcd_edgegateway" "edge" {
-  name = var.common.vcd_edge_name
-}
-
-# Создание правила Firewall для проброса SSH
-resource "vcd_nsxv_firewall_rule" "dnat_ssh_firewall" {
-  edge_gateway = var.common.vcd_edge_name
-
-  name = "SSH to ${var.name}"
-  
-  source {
-    ip_addresses = ["any"]
-  }
-
-  destination {
-    ip_addresses = [local.ssh_ip]
-  }
-
-  service {
-    protocol = "tcp"
-    port     = local.ssh_port
-  }
-}
-
 # Создание виртуальной машины
 resource "vcd_vapp_vm" "vm" {
   vapp_name           = var.vapp
@@ -94,25 +63,6 @@ data "vcd_vapp_vm" "vm_ip" {
 
   vapp_name  = var.vapp
   name       = var.name
-}
-
-# Создание проброса SSH порта во вне
-resource "vcd_nsxv_dnat" "dnat_ssh" {
-  edge_gateway = var.common.vcd_edge_name
-  network_name = var.common.ext_net_name
-  network_type = "ext"
-
-  enabled         = true
-  logging_enabled = true
-  description     = "DNAT rule for SSH ${var.name}"
-
-  original_address   = local.ssh_ip
-  original_port      = local.ssh_port
-
-  translated_address = var.networks[0].ip != "" ? var.networks[0].ip : data.vcd_vapp_vm.vm_ip.network[0].ip
-  translated_port    = 22
-  protocol           = "tcp"
-
 }
 
 # Пауза после создания машины, 3 минут

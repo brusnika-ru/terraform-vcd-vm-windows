@@ -77,9 +77,7 @@ resource "time_sleep" "wait_3_minutes" {
 # Добавление файла для управления дисками
 resource "null_resource" "manage_disk" {
   depends_on = [
-    time_sleep.wait_3_minutes, 
-    vcd_nsxv_dnat.dnat_ssh, 
-    vcd_nsxv_firewall_rule.dnat_ssh_firewall
+    time_sleep.wait_3_minutes
   ]
 
   connection {
@@ -138,8 +136,6 @@ data "vcd_vapp_vm" "vm_disks" {
 # Расширение раздела при изменении размера диска
 resource "null_resource" "extend_partitions" {
   depends_on = [
-    vcd_nsxv_dnat.dnat_ssh,
-    vcd_nsxv_firewall_rule.dnat_ssh_firewall,
     null_resource.manage_disk,
     vcd_vm_internal_disk.vmStorage
   ]

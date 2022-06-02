@@ -35,7 +35,7 @@ resource "vcd_vapp_vm" "vm" {
     enabled    = true
     change_sid = true
     
-    allow_local_admin_password = true
+    allow_local_admin_password = false
     auto_generate_password     = false
     admin_password             = "Brus123!"
     
@@ -79,6 +79,8 @@ resource "null_resource" "manage_disk" {
   depends_on = [
     time_sleep.wait_3_minutes
   ]
+
+  count = var.storages == [{}] ? 0 : 1
 
   connection {
     type        = "ssh"
@@ -139,6 +141,8 @@ resource "null_resource" "extend_partitions" {
     null_resource.manage_disk,
     vcd_vm_internal_disk.vmStorage
   ]
+
+  count = var.storages == [{}] ? 0 : 1
 
   triggers = {
     vm_disk_ids = join(",",data.vcd_vapp_vm.vm_disks.internal_disk[*].size_in_mb)

@@ -19,8 +19,8 @@ variable "cpu" {
 }
 
 variable "storages" {
-  description = "Size of disks in GigaBytes and name of mount points"
-  default     =  [{}]
+  description = "Map of polcies with size disks in GigaBytes and name of mount points"
+  default     =  {}
 }
 
 variable "types" {

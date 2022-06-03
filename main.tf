@@ -80,15 +80,16 @@ resource "null_resource" "manage_disk" {
     time_sleep.wait_3_minutes
   ]
 
-  count = var.storages == [{}] ? 0 : 1
+  count = var.storages == {} ? 0 : 1
 
   connection {
-    type        = "ssh"
-    host        = local.ssh_ip
-    port        = local.ssh_port
-    user        = var.common.ssh_user
-    private_key = file(var.common.ssh_key)
-    agent       = false
+    type            = "ssh"
+    host            = local.ssh_ip
+    port            = local.ssh_port
+    user            = var.common.ssh_user
+    private_key     = file(var.common.ssh_key)
+    agent           = false
+    target_platform = "windows"
   }
 
   provisioner "file" {
@@ -142,7 +143,7 @@ resource "null_resource" "extend_partitions" {
     vcd_vm_internal_disk.vmStorage
   ]
 
-  count = var.storages == [{}] ? 0 : 1
+  count = var.storages == {} ? 0 : 1
 
   triggers = {
     vm_disk_ids = join(",",data.vcd_vapp_vm.vm_disks.internal_disk[*].size_in_mb)

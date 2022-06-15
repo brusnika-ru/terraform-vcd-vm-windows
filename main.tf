@@ -37,7 +37,6 @@ resource "vcd_vapp_vm" "vm" {
     
     allow_local_admin_password = false
     auto_generate_password     = false
-    admin_password             = "Brus123!"
     
     must_change_password_on_first_login = false
 

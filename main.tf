@@ -70,7 +70,7 @@ resource "time_sleep" "wait_3_minutes" {
     vcd_vapp_vm.vm
   ]
 
-  create_duration = "3m"
+  create_duration = var.template != "win2019-gui" ? "3m" : "5m"
 }
 
 # Добавление файла для управления дисками

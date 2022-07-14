@@ -36,7 +36,6 @@ resource "vcd_vapp_vm" "vm" {
     change_sid = true
     
     allow_local_admin_password = false
-    auto_generate_password     = false
     
     must_change_password_on_first_login = false
 
@@ -64,19 +63,18 @@ data "vcd_vapp_vm" "vm_ip" {
   name       = var.name
 }
 
-# Пауза после создания машины, 3 минут
-resource "time_sleep" "wait_3_minutes" {
+resource "time_sleep" "wait_after_vm" {
   depends_on = [
     vcd_vapp_vm.vm
   ]
 
-  create_duration = var.template != "win2019-gui" ? "3m" : "5m"
+  create_duration = "5m"
 }
 
 # Добавление файла для управления дисками
 resource "null_resource" "manage_disk" {
   depends_on = [
-    time_sleep.wait_3_minutes
+    time_sleep.wait_after_vm
   ]
 
   count = var.storages == {} ? 0 : 1
@@ -153,19 +151,18 @@ resource "null_resource" "extend_partitions" {
   }
 }
 
-# Пауза после создания машины, 3 минуты
-resource "time_sleep" "wait_3_minutes_2" {
+resource "time_sleep" "wait_after_disk" {
   depends_on = [
     vcd_vapp_vm.vm,
     null_resource.extend_partitions
   ]
 
-  create_duration = "3m"
+  create_duration = "1m"
 }
 
 resource "null_resource" "run_ansible" {
   depends_on = [
-    time_sleep.wait_3_minutes_2
+    time_sleep.wait_after_disk
   ]
 
   triggers = {

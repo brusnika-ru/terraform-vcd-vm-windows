@@ -44,6 +44,15 @@ variable "common" {
   description = "Common variables"
 }
 
+variable "dnat_ip" {
+  description = "External IP if DNAT used"
+  default     = ""
+}
+variable "dnat_port" {
+  description = "External port if DNAT used"
+  default     = ""
+}
+
 locals {
   storages = flatten([
     for storage_key, storage in var.storages : [
@@ -68,7 +77,10 @@ locals {
 
   hot_add = var.cpu != 8 ? true : false
 
-  ssh_ip   = data.vcd_vapp_vm.vm_ip.network[0].ip
-  ssh_port = 22
+  dnat_ip   = var.dnat_ip
+  dnat_port = var.dnat_port
+
+  ssh_ip   = var.dnat_ip != "" ? var.dnat_ip : data.vcd_vapp_vm.vm_ip.network[0].ip
+  ssh_port = var.dnat_port != "" ? var.dnat_port : 22
   
 }

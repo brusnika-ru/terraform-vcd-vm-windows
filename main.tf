@@ -1,17 +1,9 @@
-data "vcd_catalog" "vapp_template" {
-  name = var.common.catalog
-}
-
-data "vcd_catalog_vapp_template" "vm_template" {
-  catalog_id = data.vcd_catalog.vapp_template.id
-  name       = var.common.template_name
-}
-
 # Создание виртуальной машины
 resource "vcd_vapp_vm" "vm" {
   vapp_name           = var.vapp
   name                = var.name
-  vapp_template_id    = data.vcd_catalog_vapp_template.vm_template.id
+  catalog_name        = var.common.catalog
+  template_name       = var.common.template_name
   vm_name_in_template = var.template != "" ? var.template : var.common.vm_name_template
   memory              = var.ram
   cpus                = var.cpu

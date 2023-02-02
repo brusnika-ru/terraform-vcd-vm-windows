@@ -70,18 +70,37 @@ data "vcd_vapp_vm" "vm_ip" {
   name       = var.name
 }
 
-resource "time_sleep" "wait_after_vm" {
+module "DNAT" {
+  source = "bitbucket.org/brusnika-it/terraform-vcd-vnat.git?ref=v1.0.6"
+  
+  for_each = {
+    for rule in var.dnat_rules : "${rule.dnat_ext_port}.${rule.dnat_in_port}" => rule
+  }
+
+  vcd_edge_name  = var.edge.vcd_edge_name
+
+  type        = "dnat"
+  description = "DNAT ${each.value.dnat_in_port} / ${var.name}"
+  src_port    = each.value.dnat_ext_port
+  dst_net     = data.vcd_vapp_vm.vm_ip.network[0].ip
+  dst_port    = each.value.dnat_in_port
+  net_name    = var.edge.external_net
+  ext_ip      = var.edge.external_ip
+}
+
+# Пауза после создания машины, 3 минут
+resource "time_sleep" "wait_3_minutes" {
   depends_on = [
     vcd_vapp_vm.vm
   ]
 
-  create_duration = "5m"
+  create_duration = "3m"
 }
 
 # Добавление файла для управления дисками
 resource "null_resource" "manage_disk" {
   depends_on = [
-    time_sleep.wait_after_vm
+    time_sleep.wait_3_minutes
   ]
 
   count = var.storages == {} ? 0 : 1
@@ -158,18 +177,20 @@ resource "null_resource" "extend_partitions" {
   }
 }
 
-resource "time_sleep" "wait_after_disk" {
+# Пауза после создания машины, 3 минуты
+resource "time_sleep" "wait_3_minutes_2" {
   depends_on = [
     vcd_vapp_vm.vm,
     null_resource.extend_partitions
   ]
 
-  create_duration = "1m"
+  create_duration = "3m"
 }
 
 resource "null_resource" "run_ansible" {
   depends_on = [
-    time_sleep.wait_after_disk
+    time_sleep.wait_3_minutes_2,
+    module.DNAT
   ]
 
   triggers = {

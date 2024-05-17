@@ -48,6 +48,7 @@ variable "common" {
 
 variable "edge" {
   description = "EDGE variables"
+  default     = {}
 }
 
 variable "dnat_ip" {
